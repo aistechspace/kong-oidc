@@ -27,10 +27,10 @@ dependencies = {
 build = {
     type = "builtin",
     modules = {
-    ["kong.plugins.oidc.filter"] = "kong/plugins/oidc/filter.lua",
-    ["kong.plugins.oidc.handler"] = "kong/plugins/oidc/handler.lua",
-    ["kong.plugins.oidc.schema"] = "kong/plugins/oidc/schema.lua",
-    ["kong.plugins.oidc.session"] = "kong/plugins/oidc/session.lua",
-    ["kong.plugins.oidc.utils"] = "kong/plugins/oidc/utils.lua"
+    ["kong.plugins.as-oidc.filter"] = "kong/plugins/as-oidc/filter.lua",
+    ["kong.plugins.as-oidc.handler"] = "kong/plugins/as-oidc/handler.lua",
+    ["kong.plugins.as-oidc.schema"] = "kong/plugins/as-oidc/schema.lua",
+    ["kong.plugins.as-oidc.session"] = "kong/plugins/as-oidc/session.lua",
+    ["kong.plugins.as-oidc.utils"] = "kong/plugins/as-oidc/utils.lua"
     }
 }

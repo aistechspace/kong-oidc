@@ -11,7 +11,7 @@ function TestHandler:setUp()
     return self.module_resty.openidc
   end
 
-  self.handler = require("kong.plugins.oidc.handler")()
+  self.handler = require("kong.plugins.as-oidc.handler")()
 end
 
 function TestHandler:tearDown()
@@ -19,7 +19,7 @@ function TestHandler:tearDown()
 end
 
 function TestHandler:test_bearer_jwt_auth_success()
-  ngx.req.get_headers = function() return {Authorization = "Bearer xxx"} end
+  ngx.req.get_headers = function() return { Authorization = "Bearer xxx" } end
   ngx.encode_base64 = function(x) return "eyJzdWIiOiJzdWIifQ==" end
 
   self.module_resty.openidc.get_discovery_doc = function(opts)
@@ -27,11 +27,11 @@ function TestHandler:test_bearer_jwt_auth_success()
   end
 
   self.module_resty.openidc.bearer_jwt_verify = function(opts)
-    token = { 
-        iss = "https://oidc",
-        sub = "sub111",
-        aud = "aud222",
-        groups = { "users" }
+    token = {
+      iss = "https://oidc",
+      sub = "sub111",
+      aud = "aud222",
+      groups = { "users" }
     }
     return token, nil, "xxx"
   end
@@ -47,7 +47,7 @@ function TestHandler:test_bearer_jwt_auth_success()
 end
 
 function TestHandler:test_bearer_jwt_auth_fail()
-  ngx.req.get_headers = function() return {Authorization = "Bearer xxx"} end
+  ngx.req.get_headers = function() return { Authorization = "Bearer xxx" } end
   local called_authenticate
   self.module_resty.openidc.get_discovery_doc = function(opts)
     return { issuer = "https://oidc" }
@@ -61,7 +61,7 @@ function TestHandler:test_bearer_jwt_auth_fail()
     called_authenticate = true
     return nil, "error"
   end
-  self.handler:access({bearer_jwt_auth_enable = "yes", client_id = "aud222"})
+  self.handler:access({ bearer_jwt_auth_enable = "yes", client_id = "aud222" })
   lu.assertTrue(called_authenticate)
 end
 

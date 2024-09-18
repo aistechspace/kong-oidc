@@ -10,7 +10,7 @@ function TestHandler:setUp()
     return self.module_resty.openidc
   end
 
-  self.handler = require("kong.plugins.oidc.handler")()
+  self.handler = require("kong.plugins.as-oidc.handler")()
 end
 
 function TestHandler:tearDown()
@@ -19,13 +19,17 @@ end
 
 function TestHandler:test_header_add()
   self.module_resty.openidc.authenticate = function(opts)
-    return { user = {sub = "sub", email = "ghost@localhost"}, id_token = { sub = "sub", aud = "aud123"} }, false
+    return { user = { sub = "sub", email = "ghost@localhost" }, id_token = { sub = "sub", aud = "aud123" } }, false
   end
   local headers = {}
   kong.service.request.set_header = function(name, value) headers[name] = value end
 
-  self.handler:access({ disable_id_token_header = "yes", disable_userinfo_header = "yes",
-                        header_names = { "X-Email", "X-Aud"}, header_claims = { "email", "aud" } })
+  self.handler:access({
+    disable_id_token_header = "yes",
+    disable_userinfo_header = "yes",
+    header_names = { "X-Email", "X-Aud" },
+    header_claims = { "email", "aud" }
+  })
   lu.assertEquals(headers["X-Email"], "ghost@localhost")
   lu.assertEquals(headers["X-Aud"], "aud123")
 end

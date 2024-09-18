@@ -5,7 +5,7 @@ TestIntrospect = require("test.unit.mockable_case"):extend()
 
 function TestIntrospect:setUp()
   TestIntrospect.super:setUp()
-  self.handler = require("kong.plugins.oidc.handler")()
+  self.handler = require("kong.plugins.as-oidc.handler")()
 end
 
 function TestIntrospect:tearDown()
@@ -21,7 +21,7 @@ function TestIntrospect:test_access_token_exists()
   }
   package.preload["resty.openidc"] = function() return self.module_resty.openidc end
 
-  ngx.req.get_headers = function() return {Authorization = "Bearer xxx"} end
+  ngx.req.get_headers = function() return { Authorization = "Bearer xxx" } end
 
   ngx.encode_base64 = function(x)
     return "eyJzdWIiOiJzdWIifQ=="
@@ -29,8 +29,8 @@ function TestIntrospect:test_access_token_exists()
 
   local headers = {}
   kong.service.request.set_header = function(name, value) headers[name] = value end
-  
-  self.handler:access({introspection_endpoint = "x", userinfo_header_name = "X-Userinfo"})
+
+  self.handler:access({ introspection_endpoint = "x", userinfo_header_name = "X-Userinfo" })
   lu.assertTrue(self:log_contains("introspect succeeded"))
   lu.assertEquals(headers['X-Userinfo'], "eyJzdWIiOiJzdWIifQ==")
 end
@@ -49,10 +49,9 @@ function TestIntrospect:test_no_authorization_header()
   local headers = {}
   kong.service.request.set_header = function(name, value) headers[name] = value end
 
-  self.handler:access({introspection_endpoint = "x", userinfo_header_name = "X-Userinfo"})
+  self.handler:access({ introspection_endpoint = "x", userinfo_header_name = "X-Userinfo" })
   lu.assertFalse(self:log_contains(self.mocked_ngx.ERR))
   lu.assertEquals(headers['X-Userinfo'], nil)
 end
-
 
 lu.run()

@@ -1,4 +1,4 @@
-local filter = require("kong.plugins.oidc.filter")
+local filter = require("kong.plugins.as-oidc.filter")
 local lu = require("luaunit")
 
 TestFilter = require("test.unit.base_case"):extend()
@@ -16,8 +16,8 @@ function TestFilter:tearDown()
   TestFilter.super:tearDown()
 end
 
-local config =  {
-  filters = {  "^/pattern1$","^/pattern2$"}
+local config = {
+  filters = { "^/pattern1$", "^/pattern2$" }
 }
 
 function TestFilter:testIgnoreRequestWhenMatchingPattern1()
@@ -37,15 +37,14 @@ end
 
 function TestFilter:testProcessRequestWhenTheyAreNoFiltersNil()
   ngx.var.uri = "/pattern1"
-  config.filters= nil
+  config.filters = nil
   lu.assertTrue(filter.shouldProcessRequest(config))
 end
 
 function TestFilter:testProcessRequestWhenTheyAreNoFiltersEmpty()
   ngx.var.uri = "/pattern1"
-  config.filters= {}
+  config.filters = {}
   lu.assertTrue(filter.shouldProcessRequest(config))
 end
-
 
 lu.run()

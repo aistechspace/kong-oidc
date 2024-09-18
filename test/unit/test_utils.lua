@@ -1,4 +1,4 @@
-local utils = require("kong.plugins.oidc.utils")
+local utils = require("kong.plugins.as-oidc.utils")
 local lu = require("luaunit")
 
 TestUtils = require("test.unit.base_case"):extend()
@@ -21,7 +21,7 @@ function TestUtils:testRedirectUriPath()
   ngx.var.request_uri = "/long/path/"
   lu.assertEquals(utils.get_redirect_uri(ngx), "/long/path")
 
-  ngx.req.get_uri_args = function() return {code = 1}end
+  ngx.req.get_uri_args = function() return { code = 1 } end
   lu.assertEquals(utils.get_redirect_uri(ngx), "/long/path/")
 end
 
@@ -45,8 +45,10 @@ function TestUtils:testOptions()
     disable_userinfo_header = "yes",
     disable_id_token_header = "yes",
     disable_access_token_header = "yes"
-  }, {var = {request_uri = "/path"},
-    req = {get_uri_args = function() return nil end}})
+  }, {
+    var = { request_uri = "/path" },
+    req = { get_uri_args = function() return nil end }
+  })
 
   lu.assertEquals(opts.client_id, 1)
   lu.assertEquals(opts.client_secret, 2)
@@ -74,19 +76,18 @@ function TestUtils:testOptions()
   }
 
   lu.assertItemsEquals(expectedFilters, opts.filters)
-
 end
 
 function TestUtils:testCommonItem()
   lu.assertFalse(utils.has_common_item(nil, "aud1"))
   lu.assertTrue(utils.has_common_item("aud1", "aud1"))
   lu.assertFalse(utils.has_common_item("aud1", "aud2"))
-  lu.assertFalse(utils.has_common_item({"aud1", "aud2"}, "aud3"))
-  lu.assertTrue(utils.has_common_item({"aud1", "aud2"}, "aud2"))
-  lu.assertFalse(utils.has_common_item("aud1", {"aud2", "aud3"}))
-  lu.assertTrue(utils.has_common_item("aud2", {"aud2", "aud3"}))
-  lu.assertTrue(utils.has_common_item({"aud2","aud3","aud4"}, {"aud4", "aud5"}))
-  lu.assertFalse(utils.has_common_item({"aud2","aud3","aud4"}, {"aud5", "aud6"}))
+  lu.assertFalse(utils.has_common_item({ "aud1", "aud2" }, "aud3"))
+  lu.assertTrue(utils.has_common_item({ "aud1", "aud2" }, "aud2"))
+  lu.assertFalse(utils.has_common_item("aud1", { "aud2", "aud3" }))
+  lu.assertTrue(utils.has_common_item("aud2", { "aud2", "aud3" }))
+  lu.assertTrue(utils.has_common_item({ "aud2", "aud3", "aud4" }, { "aud4", "aud5" }))
+  lu.assertFalse(utils.has_common_item({ "aud2", "aud3", "aud4" }, { "aud5", "aud6" }))
 end
 
 lu.run()
