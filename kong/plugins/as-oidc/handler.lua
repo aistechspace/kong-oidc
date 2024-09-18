@@ -1,5 +1,5 @@
 local OidcHandler = {
-    VERSION = "1.4.0-1",
+    VERSION = "1.4.0-2",
     PRIORITY = 1000,
 }
 local utils = require("kong.plugins.as-oidc.utils")
