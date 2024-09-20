@@ -1,6 +1,6 @@
 local OidcHandler = {
-    VERSION = "1.4.0-2",
-    PRIORITY = 1000,
+  VERSION = "1.4.0-2",
+  PRIORITY = 1000,
 }
 local utils = require("kong.plugins.as-oidc.utils")
 local filter = require("kong.plugins.as-oidc.filter")
@@ -32,8 +32,11 @@ function handle(oidcConfig)
   local response
 
   if oidcConfig.bearer_jwt_auth_enable then
+    kong.log.err(ngx.DEBUG, "handle: bearer_jwt_auth_enable enabled")
+
     response = verify_bearer_jwt(oidcConfig)
     if response then
+      kong.log.err(ngx.DEBUG, "handle: verify_bearer_jwt has response")
       utils.setCredentials(response)
       utils.injectGroups(response, oidcConfig.groups_claim)
       utils.injectHeaders(oidcConfig.header_names, oidcConfig.header_claims, { response })
@@ -41,44 +44,53 @@ function handle(oidcConfig)
         utils.injectUser(response, oidcConfig.userinfo_header_name)
       end
       return
+    else
+      kong.log.err(ngx.DEBUG, "handle: verify_bearer_jwt doesn't has a response")
     end
   end
 
   if oidcConfig.introspection_endpoint then
+    kong.log.err(ngx.DEBUG, "handle: introspection_endpoint enabled")
     response = introspect(oidcConfig)
     if response then
+      kong.log.err(ngx.DEBUG, "handle: introspect has response")
       utils.setCredentials(response)
       utils.injectGroups(response, oidcConfig.groups_claim)
       utils.injectHeaders(oidcConfig.header_names, oidcConfig.header_claims, { response })
       if not oidcConfig.disable_userinfo_header then
         utils.injectUser(response, oidcConfig.userinfo_header_name)
       end
+    else
+      kong.log.err(ngx.DEBUG, "handle: introspect doesn't has a response")
     end
   end
 
   if response == nil then
+    kong.log.err(ngx.DEBUG, "handle: still without response, make_oidc")
+
     response = make_oidc(oidcConfig)
     if response then
       if response.user or response.id_token then
         -- is there any scenario where lua-resty-openidc would not provide id_token?
         utils.setCredentials(response.user or response.id_token)
       end
-      if response.user and response.user[oidcConfig.groups_claim]  ~= nil then
+      if response.user and response.user[oidcConfig.groups_claim] ~= nil then
         utils.injectGroups(response.user, oidcConfig.groups_claim)
       elseif response.id_token then
         utils.injectGroups(response.id_token, oidcConfig.groups_claim)
       end
       utils.injectHeaders(oidcConfig.header_names, oidcConfig.header_claims, { response.user, response.id_token })
       if (not oidcConfig.disable_userinfo_header
-          and response.user) then
+            and response.user) then
         utils.injectUser(response.user, oidcConfig.userinfo_header_name)
       end
       if (not oidcConfig.disable_access_token_header
-          and response.access_token) then
-        utils.injectAccessToken(response.access_token, oidcConfig.access_token_header_name, oidcConfig.access_token_as_bearer)
+            and response.access_token) then
+        utils.injectAccessToken(response.access_token, oidcConfig.access_token_header_name,
+          oidcConfig.access_token_as_bearer)
       end
       if (not oidcConfig.disable_id_token_header
-          and response.id_token) then
+            and response.id_token) then
         utils.injectIDToken(response.id_token, oidcConfig.id_token_header_name)
       end
     end
@@ -99,7 +111,7 @@ function make_oidc(oidcConfig)
       return kong.response.error(ngx.HTTP_UNAUTHORIZED)
     else
       if oidcConfig.recovery_page_path then
-    	  ngx.log(ngx.DEBUG, "Redirecting to recovery page: " .. oidcConfig.recovery_page_path)
+        ngx.log(ngx.DEBUG, "Redirecting to recovery page: " .. oidcConfig.recovery_page_path)
         ngx.redirect(oidcConfig.recovery_page_path)
       end
       return kong.response.error(ngx.HTTP_INTERNAL_SERVER_ERROR)
@@ -146,6 +158,8 @@ end
 
 function verify_bearer_jwt(oidcConfig)
   if not utils.has_bearer_access_token() then
+    kong.log.err(ngx.DEBUG, "verify_bearer_jwt: doesn't has access token")
+
     return nil
   end
   -- setup controlled configuration for bearer_jwt_verify
